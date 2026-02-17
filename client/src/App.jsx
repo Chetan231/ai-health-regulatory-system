@@ -6,6 +6,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 // Layouts
 import PatientLayout from './layouts/PatientLayout';
 import DoctorLayout from './layouts/DoctorLayout';
+import AdminLayout from './layouts/AdminLayout';
 
 // Pages
 import Landing from './pages/common/Landing';
@@ -31,8 +32,12 @@ import DoctorProfile from './pages/doctor/Profile';
 import DoctorAppointments from './pages/doctor/Appointments';
 import DoctorPrescriptions from './pages/doctor/Prescriptions';
 
-// Admin Dashboard (placeholder)
+// Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/Users';
+import DoctorVerification from './pages/admin/DoctorVerification';
+import AdminDepartments from './pages/admin/Departments';
+import AdminBeds from './pages/admin/Beds';
 
 const AuthRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -77,7 +82,14 @@ function AppRoutes() {
       </Route>
 
       {/* Admin */}
-      <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="doctors-verify" element={<DoctorVerification />} />
+        <Route path="departments" element={<AdminDepartments />} />
+        <Route path="beds" element={<AdminBeds />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+      </Route>
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

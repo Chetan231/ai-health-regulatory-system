@@ -10,6 +10,8 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
+import patientRoutes from './routes/patientRoutes.js';
+import vitalsRoutes from './routes/vitalsRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -30,6 +32,8 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/vitals', vitalsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

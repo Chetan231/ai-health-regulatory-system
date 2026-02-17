@@ -3,6 +3,9 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 
+// Layouts
+import PatientLayout from './layouts/PatientLayout';
+
 // Pages
 import Landing from './pages/common/Landing';
 import Login from './pages/auth/Login';
@@ -10,8 +13,13 @@ import Register from './pages/auth/Register';
 import Unauthorized from './pages/common/Unauthorized';
 import NotFound from './pages/common/NotFound';
 
-// Dashboards
+// Patient Pages
 import PatientDashboard from './pages/patient/Dashboard';
+import PatientVitals from './pages/patient/Vitals';
+import PatientTimeline from './pages/patient/Timeline';
+import PatientProfile from './pages/patient/Profile';
+
+// Doctor & Admin Dashboards (placeholder)
 import DoctorDashboard from './pages/doctor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -35,13 +43,19 @@ function AppRoutes() {
       <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Patient */}
-      <Route path="/patient/dashboard" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />
+      {/* Patient - Nested with Layout */}
+      <Route path="/patient" element={<ProtectedRoute roles={['patient']}><PatientLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<PatientDashboard />} />
+        <Route path="vitals" element={<PatientVitals />} />
+        <Route path="timeline" element={<PatientTimeline />} />
+        <Route path="profile" element={<PatientProfile />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+      </Route>
 
-      {/* Doctor */}
+      {/* Doctor (placeholder — layout coming Sprint 3) */}
       <Route path="/doctor/dashboard" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
 
-      {/* Admin */}
+      {/* Admin (placeholder — layout coming Sprint 5) */}
       <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
       {/* 404 */}

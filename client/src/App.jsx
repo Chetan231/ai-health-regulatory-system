@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './routes/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Layouts
 import PatientLayout from './layouts/PatientLayout';
@@ -107,14 +108,16 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <SocketProvider>
-          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-          <AppRoutes />
-        </SocketProvider>
-      </AuthProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <SocketProvider>
+            <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+            <AppRoutes />
+          </SocketProvider>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

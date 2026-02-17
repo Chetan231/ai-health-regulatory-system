@@ -8,6 +8,19 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': 'http://localhost:5000',
+      '/socket.io': { target: 'http://localhost:5000', ws: true },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          socket: ['socket.io-client'],
+        },
+      },
     },
   },
 });

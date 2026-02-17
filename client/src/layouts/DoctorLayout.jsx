@@ -11,8 +11,8 @@ const navItems = [
   { to: '/doctor/patients', icon: FiUsers, label: 'My Patients' },
   { to: '/doctor/schedule', icon: FiClock, label: 'Schedule' },
   { to: '/doctor/profile', icon: FiUser, label: 'Profile' },
-  { to: '/doctor/appointments', icon: FiCalendar, label: 'Appointments', badge: 'Soon' },
-  { to: '/doctor/prescriptions', icon: FiFileText, label: 'Prescriptions', badge: 'Soon' },
+  { to: '/doctor/appointments', icon: FiCalendar, label: 'Appointments' },
+  { to: '/doctor/prescriptions', icon: FiFileText, label: 'Prescriptions' },
   { to: '/doctor/chat', icon: FiMessageCircle, label: 'Chat', badge: 'Soon' },
 ];
 

@@ -20,12 +20,16 @@ import PatientVitals from './pages/patient/Vitals';
 import PatientTimeline from './pages/patient/Timeline';
 import PatientProfile from './pages/patient/Profile';
 import FindDoctors from './pages/patient/FindDoctors';
+import PatientAppointments from './pages/patient/Appointments';
+import PatientPrescriptions from './pages/patient/Prescriptions';
 
 // Doctor Pages
 import DoctorDashboard from './pages/doctor/Dashboard';
 import DoctorPatients from './pages/doctor/Patients';
 import DoctorSchedule from './pages/doctor/Schedule';
 import DoctorProfile from './pages/doctor/Profile';
+import DoctorAppointments from './pages/doctor/Appointments';
+import DoctorPrescriptions from './pages/doctor/Prescriptions';
 
 // Admin Dashboard (placeholder)
 import AdminDashboard from './pages/admin/Dashboard';
@@ -56,6 +60,8 @@ function AppRoutes() {
         <Route path="timeline" element={<PatientTimeline />} />
         <Route path="profile" element={<PatientProfile />} />
         <Route path="find-doctors" element={<FindDoctors />} />
+        <Route path="appointments" element={<PatientAppointments />} />
+        <Route path="prescriptions" element={<PatientPrescriptions />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
@@ -65,10 +71,12 @@ function AppRoutes() {
         <Route path="patients" element={<DoctorPatients />} />
         <Route path="schedule" element={<DoctorSchedule />} />
         <Route path="profile" element={<DoctorProfile />} />
+        <Route path="appointments" element={<DoctorAppointments />} />
+        <Route path="prescriptions" element={<DoctorPrescriptions />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Admin (placeholder — layout coming Sprint 5) */}
+      {/* Admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
       {/* 404 */}

@@ -12,8 +12,8 @@ const navItems = [
   { to: '/patient/timeline', icon: FiClock, label: 'Health Timeline' },
   { to: '/patient/profile', icon: FiUser, label: 'Profile' },
   { to: '/patient/find-doctors', icon: FiUsers, label: 'Find Doctors' },
-  { to: '/patient/appointments', icon: FiCalendar, label: 'Appointments', badge: 'Soon' },
-  { to: '/patient/prescriptions', icon: FiFileText, label: 'Prescriptions', badge: 'Soon' },
+  { to: '/patient/appointments', icon: FiCalendar, label: 'Appointments' },
+  { to: '/patient/prescriptions', icon: FiFileText, label: 'Prescriptions' },
   { to: '/patient/chat', icon: FiMessageCircle, label: 'Chat', badge: 'Soon' },
   { to: '/patient/billing', icon: FiCreditCard, label: 'Billing', badge: 'Soon' },
 ];

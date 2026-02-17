@@ -2,6 +2,8 @@ import Doctor from '../models/Doctor.js';
 import User from '../models/User.js';
 import Patient from '../models/Patient.js';
 import Vitals from '../models/Vitals.js';
+import Appointment from '../models/Appointment.js';
+import Prescription from '../models/Prescription.js';
 import { sendResponse, sendError } from '../utils/apiResponse.js';
 
 // @desc    Get doctor dashboard stats
@@ -11,14 +13,25 @@ export const getDashboard = async (req, res, next) => {
     const doctorProfile = await Doctor.findOne({ userId: req.user._id });
     if (!doctorProfile) return sendError(res, 404, 'Doctor profile not found');
 
-    // Stats will grow as we add appointments/prescriptions
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const [todayAppts, pendingAppts, totalPatients, prescriptionCount] = await Promise.all([
+      Appointment.countDocuments({ doctorId: req.user._id, date: { $gte: today, $lt: tomorrow }, status: { $in: ['pending', 'confirmed'] } }),
+      Appointment.countDocuments({ doctorId: req.user._id, status: 'pending' }),
+      Appointment.distinct('patientId', { doctorId: req.user._id }).then((ids) => ids.length),
+      Prescription.countDocuments({ doctorId: req.user._id }),
+    ]);
+
     sendResponse(res, 200, 'Doctor dashboard', {
       profile: doctorProfile,
       stats: {
-        todayAppointments: 0,
-        totalPatients: 0,
-        pendingConsults: 0,
-        prescriptionsWritten: 0,
+        todayAppointments: todayAppts,
+        totalPatients,
+        pendingConsults: pendingAppts,
+        prescriptionsWritten: prescriptionCount,
         rating: doctorProfile.rating,
         totalReviews: doctorProfile.totalReviews,
       },

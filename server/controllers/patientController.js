@@ -1,6 +1,8 @@
 import Patient from '../models/Patient.js';
 import User from '../models/User.js';
 import Vitals from '../models/Vitals.js';
+import Appointment from '../models/Appointment.js';
+import Prescription from '../models/Prescription.js';
 import { sendResponse, sendError } from '../utils/apiResponse.js';
 
 // @desc    Get patient dashboard stats
@@ -9,7 +11,7 @@ export const getDashboard = async (req, res, next) => {
   try {
     const patientId = req.user._id;
 
-    const [profile, latestVitals, vitalsCount, recentAlerts] = await Promise.all([
+    const [profile, latestVitals, vitalsCount, recentAlerts, upcomingAppts, activePrescriptions] = await Promise.all([
       Patient.findOne({ userId: patientId }),
       Vitals.findOne({ patientId }).sort({ recordedAt: -1 }),
       Vitals.countDocuments({ patientId }),
@@ -17,6 +19,8 @@ export const getDashboard = async (req, res, next) => {
         .sort({ recordedAt: -1 })
         .limit(5)
         .select('alerts recordedAt'),
+      Appointment.countDocuments({ patientId, date: { $gte: new Date() }, status: { $in: ['pending', 'confirmed'] } }),
+      Prescription.countDocuments({ patientId, isActive: true }),
     ]);
 
     // Flatten recent alerts
@@ -30,8 +34,8 @@ export const getDashboard = async (req, res, next) => {
       vitalsCount,
       alerts,
       stats: {
-        appointments: 0, // Will be populated in Sprint 4
-        prescriptions: 0,
+        appointments: upcomingAppts,
+        prescriptions: activePrescriptions,
         labReports: 0,
         vitalsRecorded: vitalsCount,
       },

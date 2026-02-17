@@ -16,8 +16,8 @@ const navItems = [
   { to: '/patient/prescriptions', icon: FiFileText, label: 'Prescriptions' },
   { to: '/patient/ai-health', icon: FiCpu, label: 'AI Health' },
   { to: '/patient/lab-reports', icon: FiFileText, label: 'Lab Reports' },
-  { to: '/patient/chat', icon: FiMessageCircle, label: 'Chat', badge: 'Soon' },
-  { to: '/patient/billing', icon: FiCreditCard, label: 'Billing', badge: 'Soon' },
+  { to: '/patient/chat', icon: FiMessageCircle, label: 'Chat' },
+  { to: '/patient/billing', icon: FiCreditCard, label: 'Billing' },
 ];
 
 const PatientLayout = () => {

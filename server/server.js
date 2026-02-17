@@ -1,10 +1,12 @@
 import express from 'express';
+import { createServer } from 'http';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
+import { initSocket } from './config/socket.js';
 import errorHandler from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
@@ -18,11 +20,18 @@ import prescriptionRoutes from './routes/prescriptionRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import labReportRoutes from './routes/labReportRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import billingRoutes from './routes/billingRoutes.js';
 
 dotenv.config();
 connectDB();
 
 const app = express();
+const server = createServer(app);
+
+// Initialize Socket.io
+initSocket(server);
 
 // Middleware
 app.use(helmet());
@@ -46,6 +55,9 @@ app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/lab-reports', labReportRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/billing', billingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -56,6 +68,6 @@ app.get('/api/health', (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

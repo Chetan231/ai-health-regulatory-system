@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 // Layouts
@@ -25,6 +26,8 @@ import PatientAppointments from './pages/patient/Appointments';
 import PatientPrescriptions from './pages/patient/Prescriptions';
 import AIHealth from './pages/patient/AIHealth';
 import LabReports from './pages/patient/LabReports';
+import PatientChat from './pages/patient/Chat';
+import PatientBilling from './pages/patient/Billing';
 
 // Doctor Pages
 import DoctorDashboard from './pages/doctor/Dashboard';
@@ -34,6 +37,7 @@ import DoctorProfile from './pages/doctor/Profile';
 import DoctorAppointments from './pages/doctor/Appointments';
 import DoctorPrescriptions from './pages/doctor/Prescriptions';
 import AIAssist from './pages/doctor/AIAssist';
+import DoctorChat from './pages/doctor/Chat';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -70,6 +74,8 @@ function AppRoutes() {
         <Route path="prescriptions" element={<PatientPrescriptions />} />
         <Route path="ai-health" element={<AIHealth />} />
         <Route path="lab-reports" element={<LabReports />} />
+        <Route path="chat" element={<PatientChat />} />
+        <Route path="billing" element={<PatientBilling />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
@@ -81,6 +87,7 @@ function AppRoutes() {
         <Route path="appointments" element={<DoctorAppointments />} />
         <Route path="prescriptions" element={<DoctorPrescriptions />} />
         <Route path="ai-assist" element={<AIAssist />} />
+        <Route path="chat" element={<DoctorChat />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
@@ -102,8 +109,10 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-        <AppRoutes />
+        <SocketProvider>
+          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+          <AppRoutes />
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

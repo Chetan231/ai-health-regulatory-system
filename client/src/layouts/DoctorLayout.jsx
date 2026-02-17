@@ -14,7 +14,7 @@ const navItems = [
   { to: '/doctor/appointments', icon: FiCalendar, label: 'Appointments' },
   { to: '/doctor/prescriptions', icon: FiFileText, label: 'Prescriptions' },
   { to: '/doctor/ai-assist', icon: FiCpu, label: 'AI Assist' },
-  { to: '/doctor/chat', icon: FiMessageCircle, label: 'Chat', badge: 'Soon' },
+  { to: '/doctor/chat', icon: FiMessageCircle, label: 'Chat' },
 ];
 
 const DoctorLayout = () => {

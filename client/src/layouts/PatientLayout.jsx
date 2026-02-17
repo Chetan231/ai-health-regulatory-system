@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   FiActivity, FiHome, FiHeart, FiUser, FiUsers, FiClock, FiCalendar,
-  FiFileText, FiMessageCircle, FiCreditCard, FiLogOut, FiMenu, FiX, FiBell
+  FiFileText, FiMessageCircle, FiCreditCard, FiCpu, FiLogOut, FiMenu, FiX, FiBell
 } from 'react-icons/fi';
 
 const navItems = [
@@ -14,6 +14,8 @@ const navItems = [
   { to: '/patient/find-doctors', icon: FiUsers, label: 'Find Doctors' },
   { to: '/patient/appointments', icon: FiCalendar, label: 'Appointments' },
   { to: '/patient/prescriptions', icon: FiFileText, label: 'Prescriptions' },
+  { to: '/patient/ai-health', icon: FiCpu, label: 'AI Health' },
+  { to: '/patient/lab-reports', icon: FiFileText, label: 'Lab Reports' },
   { to: '/patient/chat', icon: FiMessageCircle, label: 'Chat', badge: 'Soon' },
   { to: '/patient/billing', icon: FiCreditCard, label: 'Billing', badge: 'Soon' },
 ];

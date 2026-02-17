@@ -23,6 +23,8 @@ import PatientProfile from './pages/patient/Profile';
 import FindDoctors from './pages/patient/FindDoctors';
 import PatientAppointments from './pages/patient/Appointments';
 import PatientPrescriptions from './pages/patient/Prescriptions';
+import AIHealth from './pages/patient/AIHealth';
+import LabReports from './pages/patient/LabReports';
 
 // Doctor Pages
 import DoctorDashboard from './pages/doctor/Dashboard';
@@ -31,6 +33,7 @@ import DoctorSchedule from './pages/doctor/Schedule';
 import DoctorProfile from './pages/doctor/Profile';
 import DoctorAppointments from './pages/doctor/Appointments';
 import DoctorPrescriptions from './pages/doctor/Prescriptions';
+import AIAssist from './pages/doctor/AIAssist';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -52,13 +55,11 @@ const AuthRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
       <Route path="/" element={<AuthRoute><Landing /></AuthRoute>} />
       <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
       <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Patient */}
       <Route path="/patient" element={<ProtectedRoute roles={['patient']}><PatientLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<PatientDashboard />} />
         <Route path="vitals" element={<PatientVitals />} />
@@ -67,10 +68,11 @@ function AppRoutes() {
         <Route path="find-doctors" element={<FindDoctors />} />
         <Route path="appointments" element={<PatientAppointments />} />
         <Route path="prescriptions" element={<PatientPrescriptions />} />
+        <Route path="ai-health" element={<AIHealth />} />
+        <Route path="lab-reports" element={<LabReports />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Doctor */}
       <Route path="/doctor" element={<ProtectedRoute roles={['doctor']}><DoctorLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<DoctorDashboard />} />
         <Route path="patients" element={<DoctorPatients />} />
@@ -78,10 +80,10 @@ function AppRoutes() {
         <Route path="profile" element={<DoctorProfile />} />
         <Route path="appointments" element={<DoctorAppointments />} />
         <Route path="prescriptions" element={<DoctorPrescriptions />} />
+        <Route path="ai-assist" element={<AIAssist />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Admin */}
       <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users" element={<AdminUsers />} />
@@ -91,7 +93,6 @@ function AppRoutes() {
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

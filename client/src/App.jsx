@@ -5,6 +5,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 // Layouts
 import PatientLayout from './layouts/PatientLayout';
+import DoctorLayout from './layouts/DoctorLayout';
 
 // Pages
 import Landing from './pages/common/Landing';
@@ -18,12 +19,17 @@ import PatientDashboard from './pages/patient/Dashboard';
 import PatientVitals from './pages/patient/Vitals';
 import PatientTimeline from './pages/patient/Timeline';
 import PatientProfile from './pages/patient/Profile';
+import FindDoctors from './pages/patient/FindDoctors';
 
-// Doctor & Admin Dashboards (placeholder)
+// Doctor Pages
 import DoctorDashboard from './pages/doctor/Dashboard';
+import DoctorPatients from './pages/doctor/Patients';
+import DoctorSchedule from './pages/doctor/Schedule';
+import DoctorProfile from './pages/doctor/Profile';
+
+// Admin Dashboard (placeholder)
 import AdminDashboard from './pages/admin/Dashboard';
 
-// Redirect authenticated users from auth pages
 const AuthRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -43,17 +49,24 @@ function AppRoutes() {
       <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Patient - Nested with Layout */}
+      {/* Patient */}
       <Route path="/patient" element={<ProtectedRoute roles={['patient']}><PatientLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<PatientDashboard />} />
         <Route path="vitals" element={<PatientVitals />} />
         <Route path="timeline" element={<PatientTimeline />} />
         <Route path="profile" element={<PatientProfile />} />
+        <Route path="find-doctors" element={<FindDoctors />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Doctor (placeholder — layout coming Sprint 3) */}
-      <Route path="/doctor/dashboard" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
+      {/* Doctor */}
+      <Route path="/doctor" element={<ProtectedRoute roles={['doctor']}><DoctorLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<DoctorDashboard />} />
+        <Route path="patients" element={<DoctorPatients />} />
+        <Route path="schedule" element={<DoctorSchedule />} />
+        <Route path="profile" element={<DoctorProfile />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+      </Route>
 
       {/* Admin (placeholder — layout coming Sprint 5) */}
       <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllDoctors, getDoctor, updateProfile, getMyPatients, getDashboard } from '../controllers/doctorController.js';
+import { getAllDoctors, getDoctor, updateProfile, getMyPatients, getDashboard, removePatient } from '../controllers/doctorController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.get('/', getAllDoctors);
 
 // Protected doctor routes (BEFORE /:id so Express doesn't match "my-patients" as an id)
 router.get('/my-patients', protect, authorize('doctor'), getMyPatients);
+router.delete('/my-patients/:patientId', protect, authorize('doctor'), removePatient);
 router.get('/dashboard/stats', protect, authorize('doctor'), getDashboard);
 router.put('/profile', protect, authorize('doctor'), updateProfile);
 

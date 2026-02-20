@@ -86,6 +86,20 @@ export const getMyPatients = async (req, res) => {
   }
 };
 
+// Remove patient from doctor's list (deletes their appointments with this doctor)
+export const removePatient = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Delete all appointments between this doctor and patient
+    await Appointment.deleteMany({ doctor: req.user._id, patient: patientId });
+
+    res.json({ message: 'Patient removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Doctor dashboard stats
 export const getDashboard = async (req, res) => {
   try {

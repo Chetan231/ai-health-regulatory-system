@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiSearch, FiUser, FiCalendar, FiFileText, FiDroplet, FiPhone } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiSearch, FiUser, FiCalendar, FiFileText, FiDroplet, FiPhone, FiTrash2, FiAlertCircle } from 'react-icons/fi';
 import AnimatedPage from '../../components/common/AnimatedPage';
 import Loader from '../../components/common/Loader';
+import Button from '../../components/common/Button';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
@@ -11,20 +12,35 @@ const DoctorPatients = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const { data } = await api.get('/doctors/my-patients');
-        setPatients(data);
-      } catch (err) {
-        toast.error('Failed to load patients');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPatients();
-  }, []);
+  const fetchPatients = async () => {
+    try {
+      const { data } = await api.get('/doctors/my-patients');
+      setPatients(data);
+    } catch (err) {
+      toast.error('Failed to load patients');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPatients(); }, []);
+
+  const handleDelete = async (patientId) => {
+    setDeleting(true);
+    try {
+      await api.delete(`/doctors/my-patients/${patientId}`);
+      toast.success('Patient removed successfully');
+      setDeleteModal(null);
+      setPatients(prev => prev.filter(p => p.user?._id !== patientId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to remove patient');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filtered = patients.filter(p =>
     p.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,19 +76,30 @@ const DoctorPatients = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             whileHover={{ y: -5, scale: 1.02 }}
-            className="bg-dark-light rounded-2xl border border-white/10 p-5 hover:border-primary/30 transition-all cursor-pointer"
+            className="bg-dark-light rounded-2xl border border-white/10 p-5 hover:border-primary/30 transition-all"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold"
-              >
-                {p.user?.name?.[0]?.toUpperCase() || '?'}
-              </motion.div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">{p.user?.name}</h3>
-                <p className="text-xs text-gray-500">{p.user?.email}</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold"
+                >
+                  {p.user?.name?.[0]?.toUpperCase() || '?'}
+                </motion.div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">{p.user?.name}</h3>
+                  <p className="text-xs text-gray-500">{p.user?.email}</p>
+                </div>
               </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setDeleteModal(p)}
+                className="p-2 rounded-lg hover:bg-danger/10 text-gray-600 hover:text-danger transition-colors"
+                title="Remove patient"
+              >
+                <FiTrash2 size={16} />
+              </motion.button>
             </div>
 
             <div className="space-y-2 text-xs text-gray-400">
@@ -113,6 +140,57 @@ const DoctorPatients = () => {
           <p className="text-gray-400">No patients found</p>
         </motion.div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+            onClick={() => !deleting && setDeleteModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-dark-light rounded-2xl border border-white/10 p-6 max-w-sm mx-4"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring' }}
+                className="w-14 h-14 mx-auto bg-danger/20 rounded-2xl flex items-center justify-center mb-4"
+              >
+                <FiAlertCircle className="text-danger" size={28} />
+              </motion.div>
+              <h3 className="text-lg font-bold text-white text-center mb-2">Remove Patient?</h3>
+              <p className="text-sm text-gray-400 text-center mb-1">
+                <span className="text-white font-medium">{deleteModal.user?.name}</span>
+              </p>
+              <p className="text-xs text-gray-500 text-center mb-6">
+                This will remove all appointments with this patient. Prescriptions and reports will remain.
+              </p>
+              <div className="flex gap-3">
+                <Button variant="secondary" className="flex-1" onClick={() => setDeleteModal(null)} disabled={deleting}>
+                  Cancel
+                </Button>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleDelete(deleteModal.user?._id)}
+                  disabled={deleting}
+                  className="flex-1 py-3 rounded-xl bg-danger text-white text-sm font-medium hover:bg-danger/90 transition-all disabled:opacity-50"
+                >
+                  {deleting ? 'Removing...' : 'Remove'}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatedPage>
   );
 };

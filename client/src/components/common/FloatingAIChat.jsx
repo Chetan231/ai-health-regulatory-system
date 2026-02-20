@@ -53,7 +53,7 @@ const FloatingAIChat = () => {
     }
   };
 
-  if (!user || user.role === 'doctor') return null;
+  if (!user || user.role === 'doctor' || user.role === 'admin') return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50" ref={panelRef}>

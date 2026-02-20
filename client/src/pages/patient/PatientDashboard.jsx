@@ -174,10 +174,10 @@ const PatientDashboard = () => {
   if (loading) return <Loader text="Loading dashboard..." />;
 
   const statsData = [
-    { icon: FiCalendar, label: 'Appointments', value: stats.appointments, color: 'primary' },
-    { icon: FiFileText, label: 'Reports', value: stats.reports, color: 'success' },
-    { icon: FiHeart, label: 'Prescriptions', value: stats.prescriptions, color: 'secondary' },
-    { icon: FiActivity, label: 'Vitals Recorded', value: stats.vitals, color: 'accent' },
+    { icon: FiCalendar, label: 'Appointments', value: stats.appointments, color: 'primary', link: '/patient/appointments' },
+    { icon: FiFileText, label: 'Reports', value: stats.reports, color: 'success', link: '/patient/reports' },
+    { icon: FiHeart, label: 'Prescriptions', value: stats.prescriptions, color: 'secondary', link: '/patient/prescriptions' },
+    { icon: FiActivity, label: 'Vitals Recorded', value: stats.vitals, color: 'accent', link: '/patient/vitals' },
   ];
 
   return (

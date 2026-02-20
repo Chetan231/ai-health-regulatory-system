@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import CountUp from 'react-countup';
 
-const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay = 0 }) => {
+const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay = 0, link }) => {
+  const navigate = useNavigate();
+
   const colors = {
     primary: 'from-primary/20 to-primary/5 border-primary/20 text-primary',
     secondary: 'from-secondary/20 to-secondary/5 border-secondary/20 text-secondary',
@@ -17,7 +20,8 @@ const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay 
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, delay, ease: 'easeOut' }}
       whileHover={{ y: -5, scale: 1.02 }}
-      className={`bg-gradient-to-br ${colors[color]} border rounded-2xl p-5 relative overflow-hidden`}
+      onClick={() => link && navigate(link)}
+      className={`bg-gradient-to-br ${colors[color]} border rounded-2xl p-5 relative overflow-hidden ${link ? 'cursor-pointer' : ''}`}
     >
       {/* Background glow */}
       <motion.div

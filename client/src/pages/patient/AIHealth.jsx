@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCpu, FiSend, FiAlertTriangle, FiCheckCircle, FiShield, FiActivity, FiHeart, FiMessageCircle } from 'react-icons/fi';
+import { FiCpu, FiSend, FiAlertTriangle, FiCheckCircle, FiShield, FiActivity } from 'react-icons/fi';
 import AnimatedPage from '../../components/common/AnimatedPage';
 import Button from '../../components/common/Button';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
 
 const urgencyColors = {
   'non-urgent': 'text-success bg-success/10 border-success/20',
@@ -20,48 +19,12 @@ const riskColors = {
 };
 
 const AIHealth = () => {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('symptoms');
   const [symptoms, setSymptoms] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [riskData, setRiskData] = useState(null);
   const [riskLoading, setRiskLoading] = useState(false);
-
-  // Chat state
-  const [chatMessages, setChatMessages] = useState([
-    { role: 'ai', text: 'Namaste! 🙏 Main aapka AI Health Assistant hu. Aap mujhse health se related koi bhi sawaal pooch sakte hain.\n\nJaise: bukhar, sardi, pet dard, BP, sugar, skin, mental health, weight, ya kuch bhi!\n\nKaise madad kar sakta hu? 😊' }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef(null);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
-
-  const sendChat = async () => {
-    if (!chatInput.trim()) return;
-    const msg = chatInput.trim();
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
-    setChatLoading(true);
-    try {
-      const { data } = await api.post('/ai/chat', { message: msg });
-      setChatMessages(prev => [...prev, { role: 'ai', text: data.reply, type: data.type }]);
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'ai', text: 'Sorry, kuch problem ho gayi. Please dobara try karein. 🙏' }]);
-    } finally {
-      setChatLoading(false);
-    }
-  };
-
-  const handleChatKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendChat();
-    }
-  };
 
   const handleSymptomCheck = async () => {
     if (!symptoms.trim()) return toast.error('Please describe your symptoms');
@@ -91,7 +54,6 @@ const AIHealth = () => {
   };
 
   const tabs = [
-    { id: 'chat', label: 'AI Chatbot', icon: FiMessageCircle },
     { id: 'symptoms', label: 'Symptom Checker', icon: FiActivity },
     { id: 'risk', label: 'Health Risk', icon: FiShield },
   ];
@@ -122,130 +84,6 @@ const AIHealth = () => {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* AI Chatbot */}
-        {activeTab === 'chat' && (
-          <motion.div key="chat" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-dark-light rounded-2xl border border-white/10 overflow-hidden"
-              style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}
-            >
-              {/* Chat Header */}
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-white/10 px-6 py-4 flex items-center gap-3">
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center"
-                >
-                  <FiCpu className="text-white" size={20} />
-                </motion.div>
-                <div>
-                  <h3 className="text-white font-semibold text-sm">HealthAI Assistant</h3>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-green-500" />
-                    Online • Hindi & English
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ height: 'calc(100% - 140px)' }}>
-                {chatMessages.map((msg, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex items-end gap-2 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      {/* Avatar */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                        msg.role === 'user'
-                          ? 'bg-primary/20 text-primary'
-                          : 'bg-gradient-to-r from-primary to-secondary text-white'
-                      }`}>
-                        {msg.role === 'user' ? (user?.name?.[0]?.toUpperCase() || 'U') : '🤖'}
-                      </div>
-                      {/* Message Bubble */}
-                      <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
-                        msg.role === 'user'
-                          ? 'bg-primary text-white rounded-br-md'
-                          : msg.type === 'emergency'
-                            ? 'bg-danger/10 border border-danger/20 text-gray-200 rounded-bl-md'
-                            : 'bg-white/5 border border-white/10 text-gray-200 rounded-bl-md'
-                      }`}>
-                        {msg.text.split('\n').map((line, j) => (
-                          <span key={j}>
-                            {line.replace(/\*\*(.*?)\*\*/g, '').split('**').map((part, k) => {
-                              // Simple bold rendering
-                              const boldMatch = line.match(/\*\*(.*?)\*\*/g);
-                              return part;
-                            })}
-                            {j < msg.text.split('\n').length - 1 && <br />}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* Typing indicator */}
-                <AnimatePresence>
-                  {chatLoading && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-end gap-2"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-xs">🤖</div>
-                      <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-md px-4 py-3">
-                        <div className="flex gap-1.5">
-                          {[0, 1, 2].map(i => (
-                            <motion.div
-                              key={i}
-                              animate={{ y: [0, -6, 0] }}
-                              transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-                              className="w-2 h-2 bg-gray-500 rounded-full"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <div ref={chatEndRef} />
-              </div>
-
-              {/* Chat Input */}
-              <div className="border-t border-white/10 p-4">
-                <div className="flex items-center gap-3">
-                  <input
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={handleChatKeyDown}
-                    placeholder="Apna sawaal likhein... (e.g. mujhe bukhar hai)"
-                    disabled={chatLoading}
-                    className="flex-1 bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all disabled:opacity-50"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={sendChat}
-                    disabled={chatLoading || !chatInput.trim()}
-                    className="p-3 rounded-xl bg-primary text-white hover:bg-primary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <FiSend size={18} />
-                  </motion.button>
-                </div>
-                <p className="text-[10px] text-gray-600 mt-2 text-center">⚠️ Ye AI assistant hai, doctor ki jagah nahi le sakta. Serious problem mein doctor se zaroor milein.</p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
         {/* Symptom Checker */}
         {activeTab === 'symptoms' && (
           <motion.div key="symptoms" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>

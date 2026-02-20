@@ -21,8 +21,11 @@ const CreatePrescription = () => {
     const fetchPatients = async () => {
       try {
         const { data } = await api.get('/doctors/my-patients');
-        setPatients(data);
-      } catch (err) {}
+        setPatients(data || []);
+      } catch (err) {
+        console.error('Failed to load patients:', err);
+        toast.error('Failed to load patients list');
+      }
     };
     fetchPatients();
   }, []);
@@ -44,13 +47,18 @@ const CreatePrescription = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.patient || !form.diagnosis) return toast.error('Patient and diagnosis required');
+    
+    // Filter out empty medications and validate
+    const validMeds = form.medications.filter(m => m.name && m.dosage && m.frequency && m.duration);
+    if (validMeds.length === 0) return toast.error('Add at least one medication with all fields filled');
+    
     setLoading(true);
     try {
-      await api.post('/prescriptions', form);
+      await api.post('/prescriptions', { ...form, medications: validMeds });
       toast.success('Prescription created!');
       navigate('/doctor/prescriptions');
     } catch (err) {
-      toast.error('Failed to create prescription');
+      toast.error(err.response?.data?.message || 'Failed to create prescription');
     } finally {
       setLoading(false);
     }

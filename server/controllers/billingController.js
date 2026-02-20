@@ -79,6 +79,53 @@ export const updateInvoice = async (req, res) => {
   }
 };
 
+// Pay invoice (patient)
+export const payInvoice = async (req, res) => {
+  try {
+    const { paymentMethod } = req.body;
+    const invoice = await Invoice.findById(req.params.id);
+
+    if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+    if (invoice.patient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not your invoice' });
+    }
+    if (invoice.status === 'paid') {
+      return res.status(400).json({ message: 'Invoice already paid' });
+    }
+
+    invoice.status = 'paid';
+    invoice.paidAt = new Date();
+    invoice.paymentMethod = paymentMethod || 'card';
+    await invoice.save();
+
+    // Notify about payment
+    await Notification.create({
+      user: req.user._id,
+      title: 'Payment Successful',
+      message: `Payment of ₹${invoice.total} for ${invoice.invoiceNumber} was successful`,
+      type: 'billing',
+    });
+
+    if (invoice.doctor) {
+      await Notification.create({
+        user: invoice.doctor,
+        title: 'Payment Received',
+        message: `${req.user.name} paid ₹${invoice.total} for ${invoice.invoiceNumber}`,
+        type: 'billing',
+      });
+    }
+
+    const populated = await invoice.populate([
+      { path: 'patient', select: 'name email' },
+      { path: 'doctor', select: 'name email' },
+    ]);
+
+    res.json(populated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get single invoice
 export const getInvoice = async (req, res) => {
   try {

@@ -171,7 +171,7 @@ const DoctorPatients = () => {
                 <span className="text-white font-medium">{deleteModal.user?.name}</span>
               </p>
               <p className="text-xs text-gray-500 text-center mb-6">
-                This will remove all appointments with this patient. Prescriptions and reports will remain.
+                This will remove all appointments, reports & prescriptions with this patient.
               </p>
               <div className="flex gap-3">
                 <Button variant="secondary" className="flex-1" onClick={() => setDeleteModal(null)} disabled={deleting}>

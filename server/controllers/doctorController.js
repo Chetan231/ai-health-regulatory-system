@@ -2,6 +2,7 @@ import Doctor from '../models/Doctor.js';
 import User from '../models/User.js';
 import Appointment from '../models/Appointment.js';
 import Report from '../models/Report.js';
+import Prescription from '../models/Prescription.js';
 import Patient from '../models/Patient.js';
 
 // Get all doctors (public)
@@ -86,15 +87,19 @@ export const getMyPatients = async (req, res) => {
   }
 };
 
-// Remove patient from doctor's list (deletes their appointments with this doctor)
+// Remove patient from doctor's list (deletes all related data)
 export const removePatient = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    // Delete all appointments between this doctor and patient
-    await Appointment.deleteMany({ doctor: req.user._id, patient: patientId });
+    // Delete all data between this doctor and patient
+    await Promise.all([
+      Appointment.deleteMany({ doctor: req.user._id, patient: patientId }),
+      Report.deleteMany({ doctor: req.user._id, patient: patientId }),
+      Prescription.deleteMany({ doctor: req.user._id, patient: patientId }),
+    ]);
 
-    res.json({ message: 'Patient removed successfully' });
+    res.json({ message: 'Patient and all related records removed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

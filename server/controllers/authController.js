@@ -24,6 +24,14 @@ export const register = async (req, res) => {
         userId: user._id,
         specialization: specialization || 'General',
         licenseNumber: licenseNumber || `LIC-${Date.now()}`,
+        consultationFee: 500,
+        availability: [
+          { day: 'monday', startTime: '09:00', endTime: '17:00' },
+          { day: 'tuesday', startTime: '09:00', endTime: '17:00' },
+          { day: 'wednesday', startTime: '09:00', endTime: '17:00' },
+          { day: 'thursday', startTime: '09:00', endTime: '17:00' },
+          { day: 'friday', startTime: '09:00', endTime: '17:00' },
+        ],
       });
     } else {
       await Patient.create({ userId: user._id });

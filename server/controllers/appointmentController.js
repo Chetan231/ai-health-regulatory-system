@@ -144,12 +144,19 @@ export const getAvailableSlots = async (req, res) => {
     const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const dayAvail = doctor.availability.find(a => a.day === dayName);
 
-    if (!dayAvail) return res.json({ slots: [], message: 'Doctor not available on this day' });
+    // If doctor has availability configured but not for this day
+    if (doctor.availability.length > 0 && !dayAvail) {
+      return res.json({ slots: [], message: 'Doctor not available on this day' });
+    }
+
+    // Use configured hours or default 09:00-17:00
+    const startTime = dayAvail?.startTime || '09:00';
+    const endTime = dayAvail?.endTime || '17:00';
 
     // Generate hourly slots
     const allSlots = [];
-    const start = parseInt(dayAvail.startTime.split(':')[0]);
-    const end = parseInt(dayAvail.endTime.split(':')[0]);
+    const start = parseInt(startTime.split(':')[0]);
+    const end = parseInt(endTime.split(':')[0]);
     for (let h = start; h < end; h++) {
       allSlots.push(`${String(h).padStart(2, '0')}:00`);
       allSlots.push(`${String(h).padStart(2, '0')}:30`);

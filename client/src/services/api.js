@@ -26,6 +26,9 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    if (error.response?.status === 403) {
+      console.error('Access denied:', error.response.data);
+    }
     return Promise.reject(error);
   }
 );

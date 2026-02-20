@@ -1,11 +1,12 @@
 import Appointment from '../models/Appointment.js';
 import Doctor from '../models/Doctor.js';
+import Invoice from '../models/Invoice.js';
 import Notification from '../models/Notification.js';
 
 // Create appointment
 export const createAppointment = async (req, res) => {
   try {
-    const { doctor, date, timeSlot, type, symptoms } = req.body;
+    const { doctor, date, timeSlot, type, symptoms, paymentMethod, amountPaid } = req.body;
 
     // Check if slot is taken
     const existing = await Appointment.findOne({
@@ -17,6 +18,28 @@ export const createAppointment = async (req, res) => {
       patient: req.user._id,
       doctor, date, timeSlot, type, symptoms,
     });
+
+    // Auto-create invoice if payment was made
+    if (amountPaid) {
+      const doctorProfile = await Doctor.findOne({ userId: doctor });
+      const consultationFee = doctorProfile?.consultationFee || 500;
+      const platformFee = Math.round(consultationFee * 0.02);
+
+      await Invoice.create({
+        patient: req.user._id,
+        doctor,
+        appointment: appointment._id,
+        items: [
+          { description: 'Consultation Fee', amount: consultationFee },
+          { description: 'Platform Fee', amount: platformFee },
+        ],
+        total: amountPaid,
+        status: 'paid',
+        paidAt: new Date(),
+        paymentMethod: paymentMethod || 'card',
+        dueDate: new Date(),
+      });
+    }
 
     // Notify doctor
     await Notification.create({

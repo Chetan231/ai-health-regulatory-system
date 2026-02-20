@@ -1,4 +1,4 @@
-import { analyzeSymptoms, summarizeReport, predictHealthRisk } from '../utils/aiHelper.js';
+import { analyzeSymptoms, summarizeReport, predictHealthRisk, chatResponse } from '../utils/aiHelper.js';
 import Report from '../models/Report.js';
 import Patient from '../models/Patient.js';
 import Vital from '../models/Vital.js';
@@ -29,6 +29,19 @@ export const getReportSummary = async (req, res) => {
     await report.save();
 
     res.json(summary);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// AI Chat
+export const chatWithAI = async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message) return res.status(400).json({ message: 'Message is required' });
+
+    const response = await chatResponse(message, history || []);
+    res.json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

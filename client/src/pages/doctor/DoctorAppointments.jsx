@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCalendar, FiClock, FiCheck, FiX, FiUser } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiCheck, FiX, FiUser, FiVideo } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import AnimatedPage from '../../components/common/AnimatedPage';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
@@ -16,6 +17,7 @@ const statusConfig = {
 };
 
 const DoctorAppointments = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -106,6 +108,17 @@ const DoctorAppointments = () => {
                   <span className={`px-3 py-1.5 rounded-xl text-xs font-medium border capitalize ${statusConfig[apt.status]}`}>
                     {apt.status}
                   </span>
+
+                  {apt.type === 'online' && (apt.status === 'confirmed' || apt.status === 'pending') && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/video-call/${apt._id}?doctor=${encodeURIComponent(apt.patient?.name || 'Patient')}`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-green-500 text-white hover:bg-green-500/80 transition-all shadow-lg shadow-green-500/20"
+                    >
+                      <FiVideo size={14} /> Join Call
+                    </motion.button>
+                  )}
 
                   {apt.status === 'pending' && (
                     <>

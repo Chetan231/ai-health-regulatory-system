@@ -10,6 +10,9 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+// Shared
+import VideoCall from './pages/VideoCall';
+
 // Patient
 import PatientDashboard from './pages/patient/PatientDashboard';
 import PatientProfile from './pages/patient/PatientProfile';
@@ -66,6 +69,13 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<RedirectByRole />} />
+
+            {/* Video Call (shared - both patient & doctor) */}
+            <Route path="/video-call/:appointmentId" element={
+              <ProtectedRoute roles={['patient', 'doctor']}>
+                <VideoCall />
+              </ProtectedRoute>
+            } />
 
             {/* Patient */}
             <Route path="/patient" element={

@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Layout from './components/common/Layout';
+import FloatingAIChat from './components/common/FloatingAIChat';
 
 // Public
 import LandingPage from './pages/LandingPage';
@@ -62,6 +63,7 @@ function App() {
             },
           }}
         />
+        <FloatingAIChat />
         <AnimatePresence mode="wait">
           <Routes>
             {/* Public */}

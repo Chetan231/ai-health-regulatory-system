@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import CountUp from 'react-countup';
 
-const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay = 0, link }) => {
+const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay = 0, link, prefix = '' }) => {
   const navigate = useNavigate();
 
   const colors = {
@@ -50,8 +50,7 @@ const StatsCard = ({ icon: Icon, label, value, change, color = 'primary', delay 
           )}
         </div>
         <h3 className="text-2xl font-bold text-white">
-          <CountUp end={typeof value === 'number' ? value : 0} duration={2} delay={delay} />
-          {typeof value === 'string' && value}
+          {prefix}<CountUp end={typeof value === 'number' ? value : 0} duration={2} delay={delay} />
         </h3>
         <p className="text-sm text-gray-400 mt-1">{label}</p>
       </div>

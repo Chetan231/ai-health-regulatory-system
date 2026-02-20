@@ -165,10 +165,10 @@ ${invoice.paymentMethod ? `Method:     ${invoice.paymentMethod.toUpperCase()}` :
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <StatsCard icon={FiDollarSign} label="Total Amount" value={`₹${summary.totalAmount || 0}`} color="primary" delay={0} />
-        <StatsCard icon={FiCheckCircle} label="Paid" value={`₹${summary.paid || 0}`} color="success" delay={0.1} />
-        <StatsCard icon={FiClock} label="Pending" value={`₹${summary.pending || 0}`} color="warning" delay={0.2} />
-        <StatsCard icon={FiAlertTriangle} label="Overdue" value={`₹${summary.overdue || 0}`} color="danger" delay={0.3} />
+        <StatsCard icon={FiDollarSign} label="Total Amount" value={summary.totalAmount || 0} prefix="₹" color="primary" delay={0} />
+        <StatsCard icon={FiCheckCircle} label="Paid" value={summary.paid || 0} prefix="₹" color="success" delay={0.1} />
+        <StatsCard icon={FiClock} label="Pending" value={summary.pending || 0} prefix="₹" color="warning" delay={0.2} />
+        <StatsCard icon={FiAlertTriangle} label="Overdue" value={summary.overdue || 0} prefix="₹" color="danger" delay={0.3} />
       </div>
 
       {/* Alert Banners */}

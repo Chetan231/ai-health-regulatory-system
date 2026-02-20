@@ -652,7 +652,7 @@ const BookAppointment = () => {
                       <div className="flex justify-between">
                         <div>
                           <p className="text-[10px] text-gray-500 uppercase">Card Holder</p>
-                          <p className="text-sm text-white">{cardDetails.name || 'YOUR NAME'}</p>
+                          <p className="text-sm text-white">{cardDetails.name || 'AAPKA NAAM'}</p>
                         </div>
                         <div>
                           <p className="text-[10px] text-gray-500 uppercase">Expires</p>
@@ -677,7 +677,7 @@ const BookAppointment = () => {
                       <input
                         value={cardDetails.name}
                         onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value.toUpperCase() })}
-                        placeholder="JOHN DOE"
+                        placeholder="RAHUL SHARMA"
                         className="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all"
                       />
                     </div>

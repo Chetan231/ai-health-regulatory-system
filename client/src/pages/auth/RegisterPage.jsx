@@ -101,8 +101,8 @@ const RegisterPage = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input label="Full Name" icon={FiUser} placeholder="John Doe" value={form.name} onChange={update('name')} required />
-            <Input label="Email" icon={FiMail} type="email" placeholder="john@example.com" value={form.email} onChange={update('email')} required />
+            <Input label="Full Name" icon={FiUser} placeholder="Rahul Sharma" value={form.name} onChange={update('name')} required />
+            <Input label="Email" icon={FiMail} type="email" placeholder="rahul@example.com" value={form.email} onChange={update('email')} required />
             <Input label="Phone" icon={FiPhone} placeholder="+1234567890" value={form.phone} onChange={update('phone')} />
             <Input label="Password" icon={FiLock} type="password" placeholder="Min 6 characters" value={form.password} onChange={update('password')} required />
 

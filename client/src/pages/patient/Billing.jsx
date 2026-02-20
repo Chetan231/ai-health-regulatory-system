@@ -524,7 +524,7 @@ ${invoice.paymentMethod ? `Method:     ${invoice.paymentMethod.toUpperCase()}` :
                     </div>
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">Cardholder Name</label>
-                      <input value={cardDetails.name} onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value.toUpperCase() })} placeholder="JOHN DOE" className="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all" />
+                      <input value={cardDetails.name} onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value.toUpperCase() })} placeholder="RAHUL SHARMA" className="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>

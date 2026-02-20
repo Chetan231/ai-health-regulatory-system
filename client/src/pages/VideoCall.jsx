@@ -16,11 +16,13 @@ const VideoCall = () => {
   const timerRef = useRef(null);
 
   const doctorName = searchParams.get('doctor') || 'Doctor';
-  const roomName = `healthai-${appointmentId}`;
+  // Use a clean, short room name (last 8 chars of appointment ID to keep it unique)
+  const shortId = appointmentId.slice(-8);
+  const roomName = `healthai${shortId}`;
   const displayName = encodeURIComponent(user?.name || 'User');
 
-  // Free Jitsi server (no login required)
-  const jitsiUrl = `https://jitsi.member.fsf.org/${roomName}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&userInfo.displayName="${displayName}"`;
+  // Free Jitsi server (no login required) - simple URL for reliable room joining
+  const jitsiUrl = `https://jitsi.member.fsf.org/${roomName}`;
 
   useEffect(() => {
     // Start timer when component mounts
@@ -96,6 +98,7 @@ const VideoCall = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <span className="text-[10px] text-gray-600 hidden md:inline font-mono">Room: {roomName}</span>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -107,7 +110,7 @@ const VideoCall = () => {
           </motion.button>
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <FiVideo size={12} />
-            <span className="hidden md:inline">Encrypted • Secure Call</span>
+            <span className="hidden md:inline">Secure Call</span>
           </div>
         </div>
       </motion.div>
@@ -179,7 +182,7 @@ const VideoCall = () => {
             <span className="text-sm font-medium">End Call</span>
           </motion.button>
         </div>
-        <p className="text-center text-[10px] text-gray-600 mt-2">Use the controls inside the video window to mute/unmute or toggle camera</p>
+        <p className="text-center text-[10px] text-gray-600 mt-2">Use controls inside the video window • Allow camera & mic when prompted • Both users must click "Join" inside the call</p>
       </motion.div>
 
       {/* End Call Confirmation */}

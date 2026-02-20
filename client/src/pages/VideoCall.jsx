@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPhone, FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiMaximize, FiMinimize, FiMessageSquare, FiX, FiClock, FiUser } from 'react-icons/fi';
+import { FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiClock } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const VideoCall = () => {
@@ -10,111 +10,126 @@ const VideoCall = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const jitsiContainer = useRef(null);
-  const [jitsiApi, setJitsiApi] = useState(null);
+  const jitsiApiRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
   const timerRef = useRef(null);
 
   const doctorName = searchParams.get('doctor') || 'Doctor';
-  const roomName = `healthai-appointment-${appointmentId}`;
+  const roomName = `healthai-${appointmentId}`;
 
+  // Load Jitsi script
   useEffect(() => {
-    // Load Jitsi Meet External API script
+    // Check if already loaded
+    if (window.JitsiMeetExternalAPI) {
+      setScriptLoaded(true);
+      return;
+    }
+
     const script = document.createElement('script');
     script.src = 'https://meet.jit.si/external_api.js';
     script.async = true;
-    script.onload = () => initJitsi();
-    document.body.appendChild(script);
+    script.onload = () => setScriptLoaded(true);
+    script.onerror = () => {
+      console.error('Failed to load Jitsi script');
+      setLoading(false);
+    };
+    document.head.appendChild(script);
 
     return () => {
-      if (jitsiApi) jitsiApi.dispose();
+      if (jitsiApiRef.current) {
+        jitsiApiRef.current.dispose();
+        jitsiApiRef.current = null;
+      }
       if (timerRef.current) clearInterval(timerRef.current);
-      document.body.removeChild(script);
     };
   }, []);
 
-  const initJitsi = () => {
-    if (!window.JitsiMeetExternalAPI) return;
+  // Init Jitsi when script is loaded
+  useEffect(() => {
+    if (!scriptLoaded || !jitsiContainer.current || jitsiApiRef.current) return;
 
-    const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
-      roomName: roomName,
-      parentNode: jitsiContainer.current,
-      width: '100%',
-      height: '100%',
-      configOverwrite: {
-        startWithAudioMuted: false,
-        startWithVideoMuted: false,
-        prejoinPageEnabled: false,
-        disableDeepLinking: true,
-        toolbarButtons: [],
-        hideConferenceSubject: true,
-        hideConferenceTimer: true,
-        disableModeratorIndicator: true,
-        disableProfile: true,
-        enableWelcomePage: false,
-        enableClosePage: false,
-        disableRemoteMute: true,
-        remoteVideoMenu: { disableKick: true, disableGrantModerator: true },
-        notifications: [],
-        disableFilmstripAutohiding: true,
-      },
-      interfaceConfigOverwrite: {
-        TOOLBAR_BUTTONS: [],
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: '#0f172a',
-        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-        FILM_STRIP_MAX_HEIGHT: 120,
-        HIDE_INVITE_MORE_HEADER: true,
-        MOBILE_APP_PROMO: false,
-        SHOW_CHROME_EXTENSION_BANNER: false,
-        SHOW_PROMOTIONAL_CLOSE_PAGE: false,
-        VIDEO_LAYOUT_FIT: 'both',
-      },
-      userInfo: {
-        displayName: user?.name || 'User',
-        email: user?.email || '',
-      },
-    });
+    try {
+      const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: roomName,
+        parentNode: jitsiContainer.current,
+        width: '100%',
+        height: '100%',
+        configOverwrite: {
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          prejoinPageEnabled: false,
+          disableDeepLinking: true,
+          enableWelcomePage: false,
+          enableClosePage: false,
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'chat', 'raisehand',
+            'tileview', 'fullscreen',
+          ],
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          DEFAULT_BACKGROUND: '#0f172a',
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
+          HIDE_INVITE_MORE_HEADER: true,
+          MOBILE_APP_PROMO: false,
+          SHOW_CHROME_EXTENSION_BANNER: false,
+          SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+        },
+        userInfo: {
+          displayName: user?.name || 'User',
+          email: user?.email || '',
+        },
+      });
 
-    api.addEventListener('videoConferenceJoined', () => {
+      jitsiApiRef.current = api;
+
+      api.addEventListener('videoConferenceJoined', () => {
+        setLoading(false);
+        timerRef.current = setInterval(() => {
+          setCallDuration(prev => prev + 1);
+        }, 1000);
+      });
+
+      api.addEventListener('readyToClose', () => {
+        handleEndCall();
+      });
+
+      // Fallback: hide loading after 5 seconds even if event doesn't fire
+      setTimeout(() => {
+        setLoading(false);
+      }, 5000);
+
+    } catch (err) {
+      console.error('Jitsi init error:', err);
       setLoading(false);
-      // Start call timer
-      timerRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    });
-
-    api.addEventListener('readyToClose', () => {
-      handleEndCall();
-    });
-
-    api.addEventListener('participantJoined', () => {
-      // Could show notification
-    });
-
-    setJitsiApi(api);
-  };
+    }
+  }, [scriptLoaded]);
 
   const toggleAudio = () => {
-    if (jitsiApi) {
-      jitsiApi.executeCommand('toggleAudio');
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.executeCommand('toggleAudio');
       setAudioMuted(!audioMuted);
     }
   };
 
   const toggleVideo = () => {
-    if (jitsiApi) {
-      jitsiApi.executeCommand('toggleVideo');
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.executeCommand('toggleVideo');
       setVideoMuted(!videoMuted);
     }
   };
 
   const handleEndCall = () => {
-    if (jitsiApi) jitsiApi.dispose();
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.dispose();
+      jitsiApiRef.current = null;
+    }
     if (timerRef.current) clearInterval(timerRef.current);
     setShowEndModal(false);
     navigate(-1);
@@ -153,7 +168,7 @@ const VideoCall = () => {
                 <span className="w-2 h-2 rounded-full bg-green-500" />
                 Online Consultation
               </motion.span>
-              {!loading && (
+              {!loading && callDuration > 0 && (
                 <span className="flex items-center gap-1">
                   <FiClock size={10} /> {formatDuration(callDuration)}
                 </span>
@@ -170,14 +185,14 @@ const VideoCall = () => {
 
       {/* Video Container */}
       <div className="flex-1 relative">
-        {/* Loading State */}
+        {/* Loading Overlay */}
         <AnimatePresence>
           {loading && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-20 bg-dark flex items-center justify-center"
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 z-20 bg-dark flex items-center justify-center pointer-events-none"
             >
               <div className="text-center">
                 <motion.div
@@ -195,18 +210,13 @@ const VideoCall = () => {
                   Connecting to call...
                 </motion.p>
                 <p className="text-gray-500 text-sm">Setting up secure connection with Dr. {doctorName}</p>
-                <motion.div
-                  animate={{ width: ['0%', '100%'] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="h-1 bg-gradient-to-r from-primary to-secondary rounded-full mt-6 mx-auto max-w-xs"
-                />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Jitsi Container */}
-        <div ref={jitsiContainer} className="w-full h-full" />
+        {/* Jitsi Container - always rendered */}
+        <div ref={jitsiContainer} className="w-full h-full" style={{ minHeight: '400px' }} />
       </div>
 
       {/* Bottom Controls */}
@@ -217,7 +227,6 @@ const VideoCall = () => {
         className="relative z-10 bg-dark/90 backdrop-blur-xl border-t border-white/10 px-6 py-4"
       >
         <div className="flex items-center justify-center gap-4">
-          {/* Mic Toggle */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -231,7 +240,6 @@ const VideoCall = () => {
             {audioMuted ? <FiMicOff size={22} /> : <FiMic size={22} />}
           </motion.button>
 
-          {/* Video Toggle */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -245,7 +253,6 @@ const VideoCall = () => {
             {videoMuted ? <FiVideoOff size={22} /> : <FiVideo size={22} />}
           </motion.button>
 
-          {/* End Call */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

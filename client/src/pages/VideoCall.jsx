@@ -19,8 +19,8 @@ const VideoCall = () => {
   const roomName = `healthai-${appointmentId}`;
   const displayName = encodeURIComponent(user?.name || 'User');
 
-  // Jitsi iframe URL (no auth required with direct embed)
-  const jitsiUrl = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&userInfo.displayName="${displayName}"`;
+  // Free Jitsi server (no login required)
+  const jitsiUrl = `https://jitsi.member.fsf.org/${roomName}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&userInfo.displayName="${displayName}"`;
 
   useEffect(() => {
     // Start timer when component mounts

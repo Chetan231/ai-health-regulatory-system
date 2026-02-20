@@ -21,8 +21,11 @@ const VideoCall = () => {
   const roomName = `healthai${shortId}`;
   const displayName = encodeURIComponent(user?.name || 'User');
 
-  // Free Jitsi server (no login required) - simple URL for reliable room joining
+  // Free Jitsi server (no login required)
   const jitsiUrl = `https://jitsi.member.fsf.org/${roomName}`;
+
+  // Detect mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
     // Start timer when component mounts
@@ -117,50 +120,91 @@ const VideoCall = () => {
 
       {/* Video Container */}
       <div className="flex-1 relative bg-[#0f172a]">
-        {/* Loading Overlay */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0 z-20 bg-dark flex items-center justify-center"
-            >
-              <div className="text-center">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="w-24 h-24 mx-auto bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-primary/20"
-                >
-                  <FiVideo className="text-white" size={36} />
-                </motion.div>
-                <motion.p
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="text-white font-semibold text-lg mb-2"
-                >
-                  Connecting to call...
-                </motion.p>
-                <p className="text-gray-500 text-sm">Setting up secure video call</p>
-                <motion.div
-                  animate={{ width: ['0%', '100%'] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="h-1 bg-gradient-to-r from-primary to-secondary rounded-full mt-6 mx-auto max-w-xs"
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isMobile ? (
+          /* Mobile: Show instructions + open in browser */
+          <div className="flex items-center justify-center h-full p-6">
+            <div className="text-center max-w-sm">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-24 h-24 mx-auto bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-green-500/20"
+              >
+                <FiVideo className="text-white" size={36} />
+              </motion.div>
+              <h3 className="text-white text-xl font-bold mb-2">Join Video Call</h3>
+              <p className="text-gray-400 text-sm mb-2">Room: <span className="text-primary font-mono">{roomName}</span></p>
+              <p className="text-gray-500 text-xs mb-6">
+                Tap the button below to open the video call. Both patient and doctor must join the same room.
+              </p>
 
-        {/* Jitsi iframe */}
-        <iframe
-          ref={iframeRef}
-          src={jitsiUrl}
-          onLoad={handleIframeLoad}
-          className="w-full h-full border-0"
-          allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
-          allowFullScreen
-        />
+              <motion.a
+                href={jitsiUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-500 text-white font-semibold text-lg shadow-lg shadow-green-500/30 hover:bg-green-500/90 transition-all"
+              >
+                <FiVideo size={22} /> Open Video Call
+              </motion.a>
+
+              <p className="text-gray-600 text-[10px] mt-4">
+                Allow camera & microphone when prompted • Click "Join meeting" inside
+              </p>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={() => navigate(-1)}
+                className="mt-6 text-gray-500 text-sm hover:text-white transition-all"
+              >
+                ← Back to Appointments
+              </motion.button>
+            </div>
+          </div>
+        ) : (
+          /* Desktop: iframe embed */
+          <>
+            {/* Loading Overlay */}
+            <AnimatePresence>
+              {loading && (
+                <motion.div
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 z-20 bg-dark flex items-center justify-center"
+                >
+                  <div className="text-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="w-24 h-24 mx-auto bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-primary/20"
+                    >
+                      <FiVideo className="text-white" size={36} />
+                    </motion.div>
+                    <motion.p
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="text-white font-semibold text-lg mb-2"
+                    >
+                      Connecting to call...
+                    </motion.p>
+                    <p className="text-gray-500 text-sm">Setting up secure video call</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Jitsi iframe */}
+            <iframe
+              ref={iframeRef}
+              src={jitsiUrl}
+              onLoad={handleIframeLoad}
+              className="w-full h-full border-0"
+              allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
+              allowFullScreen
+            />
+          </>
+        )}
       </div>
 
       {/* Bottom Controls */}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiClock } from 'react-icons/fi';
+import { FiPhoneOff, FiMic, FiMicOff, FiVideo, FiVideoOff, FiClock, FiMaximize } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const VideoCall = () => {
@@ -9,130 +9,48 @@ const VideoCall = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const jitsiContainer = useRef(null);
-  const jitsiApiRef = useRef(null);
+  const iframeRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [audioMuted, setAudioMuted] = useState(false);
-  const [videoMuted, setVideoMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [showEndModal, setShowEndModal] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
   const timerRef = useRef(null);
 
   const doctorName = searchParams.get('doctor') || 'Doctor';
   const roomName = `healthai-${appointmentId}`;
+  const displayName = encodeURIComponent(user?.name || 'User');
 
-  // Load Jitsi script
+  // Jitsi iframe URL (no auth required with direct embed)
+  const jitsiUrl = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&userInfo.displayName="${displayName}"`;
+
   useEffect(() => {
-    // Check if already loaded
-    if (window.JitsiMeetExternalAPI) {
-      setScriptLoaded(true);
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://meet.jit.si/external_api.js';
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
-    script.onerror = () => {
-      console.error('Failed to load Jitsi script');
-      setLoading(false);
-    };
-    document.head.appendChild(script);
+    // Start timer when component mounts
+    timerRef.current = setInterval(() => {
+      setCallDuration(prev => prev + 1);
+    }, 1000);
 
     return () => {
-      if (jitsiApiRef.current) {
-        jitsiApiRef.current.dispose();
-        jitsiApiRef.current = null;
-      }
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  // Init Jitsi when script is loaded
-  useEffect(() => {
-    if (!scriptLoaded || !jitsiContainer.current || jitsiApiRef.current) return;
-
-    try {
-      const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
-        roomName: roomName,
-        parentNode: jitsiContainer.current,
-        width: '100%',
-        height: '100%',
-        configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
-          prejoinPageEnabled: false,
-          disableDeepLinking: true,
-          enableWelcomePage: false,
-          enableClosePage: false,
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'chat', 'raisehand',
-            'tileview', 'fullscreen',
-          ],
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false,
-          DEFAULT_BACKGROUND: '#0f172a',
-          DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
-          HIDE_INVITE_MORE_HEADER: true,
-          MOBILE_APP_PROMO: false,
-          SHOW_CHROME_EXTENSION_BANNER: false,
-          SHOW_PROMOTIONAL_CLOSE_PAGE: false,
-        },
-        userInfo: {
-          displayName: user?.name || 'User',
-          email: user?.email || '',
-        },
-      });
-
-      jitsiApiRef.current = api;
-
-      api.addEventListener('videoConferenceJoined', () => {
-        setLoading(false);
-        timerRef.current = setInterval(() => {
-          setCallDuration(prev => prev + 1);
-        }, 1000);
-      });
-
-      api.addEventListener('readyToClose', () => {
-        handleEndCall();
-      });
-
-      // Fallback: hide loading after 5 seconds even if event doesn't fire
-      setTimeout(() => {
-        setLoading(false);
-      }, 5000);
-
-    } catch (err) {
-      console.error('Jitsi init error:', err);
-      setLoading(false);
-    }
-  }, [scriptLoaded]);
-
-  const toggleAudio = () => {
-    if (jitsiApiRef.current) {
-      jitsiApiRef.current.executeCommand('toggleAudio');
-      setAudioMuted(!audioMuted);
-    }
-  };
-
-  const toggleVideo = () => {
-    if (jitsiApiRef.current) {
-      jitsiApiRef.current.executeCommand('toggleVideo');
-      setVideoMuted(!videoMuted);
-    }
+  const handleIframeLoad = () => {
+    setLoading(false);
   };
 
   const handleEndCall = () => {
-    if (jitsiApiRef.current) {
-      jitsiApiRef.current.dispose();
-      jitsiApiRef.current = null;
-    }
     if (timerRef.current) clearInterval(timerRef.current);
     setShowEndModal(false);
     navigate(-1);
+  };
+
+  const openFullscreen = () => {
+    if (iframeRef.current) {
+      if (iframeRef.current.requestFullscreen) {
+        iframeRef.current.requestFullscreen();
+      } else if (iframeRef.current.webkitRequestFullscreen) {
+        iframeRef.current.webkitRequestFullscreen();
+      }
+    }
   };
 
   const formatDuration = (seconds) => {
@@ -168,7 +86,7 @@ const VideoCall = () => {
                 <span className="w-2 h-2 rounded-full bg-green-500" />
                 Online Consultation
               </motion.span>
-              {!loading && callDuration > 0 && (
+              {callDuration > 0 && (
                 <span className="flex items-center gap-1">
                   <FiClock size={10} /> {formatDuration(callDuration)}
                 </span>
@@ -177,14 +95,25 @@ const VideoCall = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <FiVideo size={12} />
-          <span>Encrypted • Secure Call</span>
+        <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={openFullscreen}
+            className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            title="Fullscreen"
+          >
+            <FiMaximize size={16} />
+          </motion.button>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <FiVideo size={12} />
+            <span className="hidden md:inline">Encrypted • Secure Call</span>
+          </div>
         </div>
       </motion.div>
 
       {/* Video Container */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-[#0f172a]">
         {/* Loading Overlay */}
         <AnimatePresence>
           {loading && (
@@ -192,7 +121,7 @@ const VideoCall = () => {
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="absolute inset-0 z-20 bg-dark flex items-center justify-center pointer-events-none"
+              className="absolute inset-0 z-20 bg-dark flex items-center justify-center"
             >
               <div className="text-center">
                 <motion.div
@@ -209,14 +138,26 @@ const VideoCall = () => {
                 >
                   Connecting to call...
                 </motion.p>
-                <p className="text-gray-500 text-sm">Setting up secure connection with Dr. {doctorName}</p>
+                <p className="text-gray-500 text-sm">Setting up secure video call</p>
+                <motion.div
+                  animate={{ width: ['0%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="h-1 bg-gradient-to-r from-primary to-secondary rounded-full mt-6 mx-auto max-w-xs"
+                />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Jitsi Container - always rendered */}
-        <div ref={jitsiContainer} className="w-full h-full" style={{ minHeight: '400px' }} />
+        {/* Jitsi iframe */}
+        <iframe
+          ref={iframeRef}
+          src={jitsiUrl}
+          onLoad={handleIframeLoad}
+          className="w-full h-full border-0"
+          allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
+          allowFullScreen
+        />
       </div>
 
       {/* Bottom Controls */}
@@ -227,41 +168,18 @@ const VideoCall = () => {
         className="relative z-10 bg-dark/90 backdrop-blur-xl border-t border-white/10 px-6 py-4"
       >
         <div className="flex items-center justify-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleAudio}
-            className={`p-4 rounded-2xl transition-all ${
-              audioMuted
-                ? 'bg-danger/20 text-danger border border-danger/30'
-                : 'bg-white/10 text-white border border-white/10 hover:bg-white/15'
-            }`}
-          >
-            {audioMuted ? <FiMicOff size={22} /> : <FiMic size={22} />}
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleVideo}
-            className={`p-4 rounded-2xl transition-all ${
-              videoMuted
-                ? 'bg-danger/20 text-danger border border-danger/30'
-                : 'bg-white/10 text-white border border-white/10 hover:bg-white/15'
-            }`}
-          >
-            {videoMuted ? <FiVideoOff size={22} /> : <FiVideo size={22} />}
-          </motion.button>
-
+          {/* End Call */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setShowEndModal(true)}
-            className="p-4 px-8 rounded-2xl bg-danger text-white shadow-lg shadow-danger/30 hover:bg-danger/90 transition-all"
+            className="p-4 px-8 rounded-2xl bg-danger text-white shadow-lg shadow-danger/30 hover:bg-danger/90 transition-all flex items-center gap-2"
           >
             <FiPhoneOff size={22} />
+            <span className="text-sm font-medium">End Call</span>
           </motion.button>
         </div>
+        <p className="text-center text-[10px] text-gray-600 mt-2">Use the controls inside the video window to mute/unmute or toggle camera</p>
       </motion.div>
 
       {/* End Call Confirmation */}

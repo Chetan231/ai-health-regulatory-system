@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Layout from './components/common/Layout';
@@ -64,6 +65,7 @@ function App() {
           }}
         />
         <FloatingAIChat />
+        <Analytics />
         <AnimatePresence mode="wait">
           <Routes>
             {/* Public */}
